@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Suspicious Activity Detection Tool</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .navbar {
+            background-color: #2a2a2a;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar h1 {
+            margin: 0;
+            color: #ff4444;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .upload-card {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .upload-card i {
+            font-size: 3rem;
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+
+        .upload-card h2 {
+            color: #4CAF50;
+        }
+
+        .card h2 {
+            color: #ff4444;
+            margin-top: 0;
+        }
+
+        .activity-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .activity-item {
+            background-color: #333;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-item .time {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+
+        .status.high {
+            background-color: #ff4444;
+            color: white;
+        }
+
+        .status.medium {
+            background-color: #ffaa00;
+            color: white;
+        }
+
+        .status.low {
+            background-color: #00aa00;
+            color: white;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin-top: 1rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            background-color: #333;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Suspicious Activity Detection Tool</h1>
+        <div>
+            <span style="color: #888;">Welcome, {{ current_user.username }}</span>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <div class="card upload-card" onclick="window.location.href='{{ url_for('upload_image') }}'">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h2>Upload Image</h2>
+                <p>Upload and analyze images for suspicious activity</p>
+            </div>
+            <div class="card">
+                <h2>Recent Activities</h2>
+                <ul class="activity-list">
+                    <li class="activity-item">
+                        <div>
+                            <strong>Multiple Failed Login Attempts</strong>
+                            <div class="time">2 minutes ago</div>
+                        </div>
+                        <span class="status high">High Risk</span>
+                    </li>
+                    <li class="activity-item">
+                        <div>
+                            <strong>Unusual File Access Pattern</strong>
+                            <div class="time">15 minutes ago</div>
+                        </div>
+                        <span class="status medium">Medium Risk</span>
+                    </li>
+                    <li class="activity-item">
+                        <div>
+                            <strong>New Device Login</strong>
+                            <div class="time">1 hour ago</div>
+                        </div>
+                        <span class="status low">Low Risk</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Activity Statistics</h2>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">High Risk Events</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">28</div>
+                        <div class="stat-label">Medium Risk Events</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">45</div>
+                        <div class="stat-label">Low Risk Events</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>System Status</h2>
+                <div class="activity-list">
+                    <li class="activity-item">
+                        <div>
+                            <strong>Real-time Monitoring</strong>
+                            <div class="time">Active</div>
+                        </div>
+                        <span class="status low">Running</span>
+                    </li>
+                    <li class="activity-item">
+                        <div>
+                            <strong>Database Connection</strong>
+                            <div class="time">Connected</div>
+                        </div>
+                        <span class="status low">Healthy</span>
+                    </li>
+                    <li class="activity-item">
+                        <div>
+                            <strong>Alert System</strong>
+                            <div class="time">Enabled</div>
+                        </div>
+                        <span class="status low">Active</span>
+                    </li>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
