@@ -9,6 +9,8 @@ from datetime import datetime
 from src.image_classifier import SuspiciousActivityClassifier
 from werkzeug.utils import secure_filename
 
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
