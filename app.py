@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -6,15 +6,26 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import re
 from datetime import datetime
+from src.image_classifier import SuspiciousActivityClassifier
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MODEL_PATH'] = 'models/suspicious_activity_model.pth'
 
 # Create uploads directory if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Initialize the classifier
+classifier = SuspiciousActivityClassifier()
+model_loaded = False
+if os.path.exists(app.config['MODEL_PATH']):
+    model_loaded = classifier.load_model(app.config['MODEL_PATH'])
+    if not model_loaded:
+        print("Warning: Model failed to load. The system will run in demo mode.")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -29,7 +40,6 @@ class User(UserMixin, db.Model):
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
 @login_manager.user_loader
@@ -87,25 +97,67 @@ def logout():
 @app.route('/upload_image', methods=['GET', 'POST'])
 def upload_image():
     if request.method == 'POST':
+        # Check if the post request has the file part
         if 'image' not in request.files:
-            flash('No file selected')
+            flash('No file part in the request')
             return redirect(request.url)
-        
-        file = request.files['image']
-        if file.filename == '':
-            flash('No file selected')
-            return redirect(request.url)
-        
-        if file:
-            # Save the file
-            filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
             
-            # Redirect to display the image
-            return redirect(url_for('display_image', filename=filename))
-    
+        file = request.files['image']
+        
+        # If user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+            
+        if file and allowed_file(file.filename):
+            try:
+                # Create a secure filename
+                filename = secure_filename(file.filename)
+                # Add timestamp to make filename unique
+                filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                
+                # Ensure the upload directory exists
+                os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                
+                # Save the file
+                file.save(file_path)
+                
+                # Classify the image
+                if not model_loaded:
+                    # Demo mode - return dummy results
+                    results = {
+                        'predicted_class': 'normal',
+                        'confidence': 100.0,
+                        'probabilities': {
+                            'peeking': 0.0,
+                            'sneaking': 0.0,
+                            'stealing': 0.0,
+                            'normal': 100.0
+                        }
+                    }
+                    flash('Model not loaded - running in demo mode')
+                else:
+                    results = classifier.predict(file_path)
+                
+                return render_template('display_image.html', 
+                                    filename=filename,
+                                    prediction=results['predicted_class'],
+                                    confidence=results['confidence'],
+                                    probabilities=results['probabilities'])
+            except Exception as e:
+                flash(f'Error processing image: {str(e)}')
+                return redirect(request.url)
+        else:
+            flash('Invalid file type. Please upload an image file (jpg, jpeg, png)')
+            return redirect(request.url)
+            
     return render_template('image_upload.html')
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/display_image/<filename>')
 def display_image(filename):
@@ -118,7 +170,7 @@ def uploaded_file(filename):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True) 
+    app.run(debug=False) 
 
 
 

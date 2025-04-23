@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-warning alert-dismissible fade show cyber-alert" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card cyber-card">
+                <div class="card-header cyber-header">
+                    <h2 class="cyber-title">
+                        <i class="fas fa-upload me-2"></i>Upload Image
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form id="uploadForm" action="{{ url_for('upload_image') }}" method="POST" enctype="multipart/form-data">
+                        <div id="dropZone" class="drop-zone-container">
+                            <input type="file" id="fileInput" name="file" accept="image/*" class="d-none">
+                            <div class="upload-container">
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                                    <h3>Drag & Drop Image Here</h3>
+                                    <p>or</p>
+                                    <button type="button" class="btn btn-primary cyber-btn" onclick="document.getElementById('fileInput').click()">
+                                        <i class="fas fa-folder-open me-2"></i>Browse Files
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="selectedFileInfo" class="selected-file-info" style="display: none;">
+                            <div class="image-preview-container mb-4">
+                                <img id="imagePreview" src="#" alt="Preview" class="img-fluid cyber-image-preview">
+                            </div>
+                            <div class="cyber-path">
+                                <i class="fas fa-image me-2"></i>
+                                <span class="path-text" id="selectedFilePath"></span>
+                            </div>
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary cyber-btn" id="uploadButton">
+                                    <i class="fas fa-upload me-2"></i>Upload Image
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.cyber-card {
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.cyber-card:hover {
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.cyber-header {
+    background: rgba(0, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    padding: 1.5rem;
+}
+
+.cyber-title {
+    color: #00ffff;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.upload-container {
+    border: 2px dashed rgba(0, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 3rem;
+    text-align: center;
+    background: rgba(30, 30, 30, 0.5);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.upload-container.drag-over {
+    border-color: #00ffff;
+    background: rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.drop-zone-container {
+    transition: all 0.3s ease;
+}
+
+.drop-zone-container.hidden {
+    display: none !important;
+    visibility: hidden;
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.upload-content {
+    color: #e0e0e0;
+}
+
+.upload-content h3 {
+    color: #00ffff;
+    margin-bottom: 1rem;
+}
+
+.selected-file-info {
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 1.5rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.cyber-path {
+    color: #00ffff;
+    font-family: 'Space Grotesk', monospace;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-break: break-all;
+    margin-bottom: 1.5rem;
+}
+
+.path-text {
+    color: #00ffff;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+.cyber-btn {
+    background: linear-gradient(45deg, #00ffff, #00bfff);
+    border: none;
+    color: #0a0a0a;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.cyber-btn:hover {
+    background: linear-gradient(45deg, #00bfff, #00ffff);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.cyber-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.image-preview-container {
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.cyber-image-preview {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.cyber-image-preview:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const selectedFileInfo = document.getElementById('selectedFileInfo');
+    const selectedFilePath = document.getElementById('selectedFilePath');
+    const uploadButton = document.getElementById('uploadButton');
+    const imagePreview = document.getElementById('imagePreview');
+
+    function showSelectedFile(file) {
+        // Completely remove the drop zone
+        dropZone.parentNode.removeChild(dropZone);
+        
+        // Show the selected file info
+        selectedFilePath.textContent = file.name;
+        selectedFileInfo.style.display = 'block';
+
+        // Create and show image preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+
+    // Handle file selection through the file input
+    fileInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) {
+            showSelectedFile(this.files[0]);
+        }
+    });
+
+    // Handle drag and drop
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.querySelector('.upload-container').classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.querySelector('.upload-container').classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.querySelector('.upload-container').classList.remove('drag-over');
+        
+        if (e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            fileInput.files = e.dataTransfer.files;
+            showSelectedFile(file);
+        }
+    });
+});
+</script>
+{% endblock %} 

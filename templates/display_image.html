@@ -1,182 +1,288 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Image - Survion</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+{% extends "base.html" %}
 
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-            background-image: 
-                linear-gradient(125deg, rgba(0,0,0,0.97), rgba(0,0,0,0.9)),
-                url('/static/images/img3.jpg');
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
-            animation: gradientShift 20s ease infinite;
-            font-size: 16px;
-            line-height: 1.5;
-            opacity: 0;
-            transition: opacity 0.6s ease-in-out;
-        }
-
-        body.fade-in {
-            opacity: 1;
-        }
-
-        .display-container {
-            max-width: 1000px;
-            margin: 50px auto;
-            padding: 2rem;
-            background: rgba(20, 20, 20, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 255, 255, 0.15);
-            border-radius: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .display-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .display-header h1 {
-            font-family: 'Orbitron', sans-serif;
-            color: #00ffff;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-        }
-
-        .image-container {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .displayed-image {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 15px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(0, 255, 255, 0.2);
-            transition: transform 0.3s ease;
-        }
-
-        .displayed-image:hover {
-            transform: scale(1.02);
-        }
-
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .action-btn {
-            padding: 0.8rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .upload-new-btn {
-            background: linear-gradient(45deg, #00ffff, #00cccc);
-            color: #000;
-        }
-
-        .back-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: #00ffff;
-            border: 1px solid rgba(0, 255, 255, 0.3);
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
-        }
-
-        .image-info {
-            text-align: center;
-            margin-top: 1rem;
-            color: #e0ffff;
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-            .display-container {
-                margin: 30px 1rem;
-                padding: 1.5rem;
-            }
-
-            .display-header h1 {
-                font-size: 2rem;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-            }
-
-            .action-btn {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="display-container">
-        <div class="display-header">
-            <h1>Uploaded Image</h1>
-        </div>
-        
-        <div class="image-container">
-            <img src="{{ url_for('uploaded_file', filename=filename) }}" alt="Uploaded Image" class="displayed-image">
-            <div class="image-info">
-                <p>Filename: {{ filename }}</p>
+{% block content %}
+<div class="container mt-5">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-warning alert-dismissible fade show cyber-alert" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card cyber-card mb-4">
+                <div class="card-header cyber-header">
+                    <h2 class="cyber-title">
+                        <i class="fas fa-image me-2"></i>Uploaded Image
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="image-container">
+                        <img src="{{ url_for('uploaded_file', filename=filename) }}" class="img-fluid cyber-image" alt="Uploaded Image">
+                    </div>
+                    <div class="image-path-container mt-3">
+                        <div class="cyber-path">
+                            <i class="fas fa-folder-open me-2"></i>
+                            <span class="path-text">Image Path: {{ url_for('uploaded_file', filename=filename) }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <div class="action-buttons">
-            <a href="{{ url_for('upload_image') }}" class="action-btn upload-new-btn">
-                <i class="fas fa-upload"></i> Upload New Image
-            </a>
-            <a href="{{ url_for('intro') }}" class="action-btn back-btn">
-                <i class="fas fa-arrow-left"></i> Back to Home
+        <div class="col-md-6">
+            <div class="card cyber-card">
+                <div class="card-header cyber-header">
+                    <h2 class="cyber-title">
+                        <i class="fas fa-chart-bar me-2"></i>Analysis Results
+                    </h2>
+                </div>
+                <div class="card-body">
+                    {% if prediction == 'error' %}
+                        <div class="alert alert-danger cyber-alert">
+                            <h4><i class="fas fa-exclamation-circle me-2"></i>Error Processing Image</h4>
+                            <p>There was an error analyzing the image. Please try again with a different image.</p>
+                        </div>
+                    {% else %}
+                        <h3 class="card-title cyber-subtitle">
+                            Prediction: 
+                            <span class="badge {% if prediction == 'normal' %}cyber-badge-success{% else %}cyber-badge-warning{% endif %}">
+                                {{ prediction }}
+                            </span>
+                        </h3>
+                        <p class="card-text cyber-text">
+                            <i class="fas fa-chart-line me-2"></i>Confidence: {{ "%.2f"|format(confidence) }}%
+                        </p>
+                        
+                        <h4 class="mt-4 cyber-subtitle">
+                            <i class="fas fa-list-alt me-2"></i>Detailed Probabilities:
+                        </h4>
+                        <div class="cyber-progress-container">
+                            <div class="cyber-progress mb-3">
+                                <div class="cyber-progress-bar cyber-progress-success" role="progressbar" 
+                                     style="width: {{ probabilities.normal }}%">
+                                    <span class="cyber-progress-text">
+                                        <i class="fas fa-check-circle me-1"></i>Normal: {{ "%.2f"|format(probabilities.normal) }}%
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="cyber-progress mb-3">
+                                <div class="cyber-progress-bar cyber-progress-warning" role="progressbar" 
+                                     style="width: {{ probabilities.peeking }}%">
+                                    <span class="cyber-progress-text">
+                                        <i class="fas fa-eye me-1"></i>Peeking: {{ "%.2f"|format(probabilities.peeking) }}%
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="cyber-progress mb-3">
+                                <div class="cyber-progress-bar cyber-progress-warning" role="progressbar" 
+                                     style="width: {{ probabilities.sneaking }}%">
+                                    <span class="cyber-progress-text">
+                                        <i class="fas fa-walking me-1"></i>Sneaking: {{ "%.2f"|format(probabilities.sneaking) }}%
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="cyber-progress mb-3">
+                                <div class="cyber-progress-bar cyber-progress-danger" role="progressbar" 
+                                     style="width: {{ probabilities.stealing }}%">
+                                    <span class="cyber-progress-text">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Stealing: {{ "%.2f"|format(probabilities.stealing) }}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('upload_image') }}" class="btn btn-primary cyber-btn">
+                <i class="fas fa-upload me-2"></i>Upload Another Image
             </a>
         </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Fade in the body
-            document.body.classList.add('fade-in');
-        });
-    </script>
-</body>
-</html> 
+<style>
+.cyber-card {
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.cyber-card:hover {
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.cyber-header {
+    background: rgba(0, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    padding: 1.5rem;
+}
+
+.cyber-title {
+    color: #00ffff;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.cyber-subtitle {
+    color: #00ffff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.cyber-text {
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+.image-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    background: rgba(30, 30, 30, 0.5);
+    padding: 1rem;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cyber-image {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.cyber-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.cyber-badge-success {
+    background: linear-gradient(45deg, #00ff00, #00bfff);
+    color: #0a0a0a;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.cyber-badge-warning {
+    background: linear-gradient(45deg, #ffc107, #ff9800);
+    color: #0a0a0a;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.cyber-progress-container {
+    background: rgba(30, 30, 30, 0.8);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+.cyber-progress {
+    height: 30px;
+    background: rgba(40, 40, 40, 0.8);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+.cyber-progress-bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    position: relative;
+    transition: width 0.6s ease;
+}
+
+.cyber-progress-success {
+    background: linear-gradient(45deg, #00ff00, #00bfff);
+}
+
+.cyber-progress-warning {
+    background: linear-gradient(45deg, #ffc107, #ff9800);
+}
+
+.cyber-progress-danger {
+    background: linear-gradient(45deg, #ff0000, #ff4500);
+}
+
+.cyber-progress-text {
+    color: #0a0a0a;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.cyber-btn {
+    background: linear-gradient(45deg, #00ffff, #00bfff);
+    border: none;
+    color: #0a0a0a;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.cyber-btn:hover {
+    background: linear-gradient(45deg, #00bfff, #00ffff);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.cyber-alert {
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border-radius: 6px;
+    padding: 1rem 1.5rem;
+}
+
+.image-path-container {
+    background: rgba(30, 30, 30, 0.8);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-top: 1rem;
+}
+
+.cyber-path {
+    color: #00ffff;
+    font-family: 'Space Grotesk', monospace;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    word-break: break-all;
+}
+
+.path-text {
+    color: #00ffff;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+</style>
+{% endblock %} 
