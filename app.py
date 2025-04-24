@@ -1,33 +1,31 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
-
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import re
 from datetime import datetime
-from src.image_classifier import SuspiciousActivityClassifier
 from werkzeug.utils import secure_filename
-
-
+from src.model_utils import load_model
+from src.action_detector import detect_action
+from config import Config
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
-app.config['MODEL_PATH'] = 'models/suspicious_activity_model.pth'
+app.config['MODEL_PATH'] = 'models/yolov8n.pt'
 
 # Create uploads directory if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Initialize the classifier
-classifier = SuspiciousActivityClassifier()
-model_loaded = False
-if os.path.exists(app.config['MODEL_PATH']):
-    model_loaded = classifier.load_model(app.config['MODEL_PATH'])
-    if not model_loaded:
-        print("Warning: Model failed to load. The system will run in demo mode.")
+# Initialize the model
+model = load_model()
+model_loaded = model is not None
+
+if not model_loaded:
+    print("Warning: Model failed to load. The system will run in demo mode.")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -126,28 +124,38 @@ def upload_image():
                 # Save the file
                 file.save(file_path)
                 
-                # Classify the image
+                # Detect action in the image
                 if not model_loaded:
                     # Demo mode - return dummy results
-                    results = {
-                        'predicted_class': 'normal',
-                        'confidence': 100.0,
-                        'probabilities': {
-                            'peeking': 0.0,
-                            'sneaking': 0.0,
-                            'stealing': 0.0,
-                            'normal': 100.0
-                        }
-                    }
                     flash('Model not loaded - running in demo mode')
-                else:
-                    results = classifier.predict(file_path)
-                
-                return render_template('display_image.html', 
+                    return render_template('display_image.html', 
                                     filename=filename,
-                                    prediction=results['predicted_class'],
-                                    confidence=results['confidence'],
-                                    probabilities=results['probabilities'])
+                                    prediction='Normal',
+                                    confidence=100.0,
+                                    probabilities={
+                                        'Normal': 100.0,
+                                        'Peaking': 0.0,
+                                        'Sneaking': 0.0,
+                                        'Stealing': 0.0
+                                    })
+                
+                # Process the image using the model
+                action_data = detect_action(model, file_path)
+                if action_data:
+                    image, detections, predicted_action, action_scores, bar_chart = action_data
+                    
+                    # Pass the action_scores directly as probabilities after converting to percentages
+                    probabilities = {k: v * 100 for k, v in action_scores.items()}
+                    
+                    return render_template('display_image.html', 
+                                        filename=filename,
+                                        prediction=predicted_action[0],
+                                        confidence=predicted_action[1] * 100,
+                                        probabilities=probabilities)
+                else:
+                    flash('No objects detected in the image')
+                    return redirect(request.url)
+                    
             except Exception as e:
                 flash(f'Error processing image: {str(e)}')
                 return redirect(request.url)
@@ -172,8 +180,7 @@ def uploaded_file(filename):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=False) 
+    app.run(debug=False)
 
 
 
-    

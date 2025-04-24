@@ -19,19 +19,17 @@ def load_model():
         return None
 
 def predict_image(model, image_path, conf_threshold=Config.CONF_THRESHOLD):
-    print("Reading image:", image_path)
+    """Runs model prediction on an image."""
     img = cv2.imread(image_path)
     if img is None:
-        print(f"Error: Could not load image at path {image_path}")
-        return None
+      print(f"Error: Could not load image at path {image_path}")
+      return None
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    print("Calling model.predict ...")
     results = model.predict(
         source=img,
         conf=conf_threshold,
         show=False
     )
-    print("model.predict returned.")
     if len(results) == 0:
         return None
     return results[0]

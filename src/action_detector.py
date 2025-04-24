@@ -15,6 +15,7 @@ def classify_action(detections):
         'Peaking': 0.0,
         'Normal': 0.0
     }
+
     if 'person' in detected_objects:
         if any(obj in detected_objects for obj in ['backpack', 'handbag', 'suitcase']):
             action_scores['Stealing'] += 0.4
@@ -31,9 +32,9 @@ def classify_action(detections):
     return action_scores
 
 def detect_action(model, image_path, conf_threshold=Config.CONF_THRESHOLD):
-    print("Detecting action for:", image_path)
+    """Detects objects and classifies the action in an image."""
     result = predict_image(model, image_path, conf_threshold)
-    print("After predict_image call.")
+
     if result is None:
         print(f"No objects detected in {image_path}")
         return None
